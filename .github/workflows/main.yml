@@ -1,0 +1,51 @@
+name: CI
+ 
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+ 
+env:
+  CSV_URL: "train_pca.csv"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # checkout your repository under $GITHUB_WORKSPACE
+      - uses: actions/checkout@v3
+
+      # setup python
+      - name: Set up Python 3.12.7
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12.7"
+
+      # check env variabel
+      - name: Chack Env
+        run: |
+          echo $CSV_URL
+      # Instalasi mlflow
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install mlflow
+      # run as  a mlflow project
+      - name: Run MLflow project
+        run: 
+          mlflow run MLproject --env-manager=local
+
+      # save model to repo
+      - name: Save MLruns
+        run: |
+          git config --global user.name ${{ secrets.username}}
+          git config --global user.email ${{ secrets.email}}}
+          git add mlruns/
+          git commit -m "add ml runs"
+          git push origin master
+        
+  
