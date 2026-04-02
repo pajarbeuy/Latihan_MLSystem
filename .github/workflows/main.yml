@@ -14,6 +14,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: GH_EMAIL
 
     steps:
       # checkout your repository under $GITHUB_WORKSPACE
