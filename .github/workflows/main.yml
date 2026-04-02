@@ -39,13 +39,26 @@ jobs:
         run: 
           mlflow run . --env-manager=local
 
+
+
+      - name: Setup Git LPS
+        run: |
+           git config --global user.name ${{ secrets.username}}
+           git config --global user.email ${{ secrets.eamil}}
+           git lfs install
+           git lfs track "mlruns/**"
+           git add .gitattributes
+           git commit -m "Track large file with lfs" || true
+           git push origin main
+           
+
       # save model to repo
       - name: Save MLruns
         run: |
           git config --global user.name ${{ secrets.username}}
           git config --global user.email ${{ secrets.email}}}
           git add mlruns/
-          git commit -m "add ml runs"
+          git commit -m "add ml runs" || true
           git push origin master
         
   
