@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD MLflow
  
 on:
   push:
@@ -10,6 +10,7 @@ on:
  
 env:
   CSV_URL: "train_pca.csv"
+  TARGET_VAR : "Credit_Score"
 
 jobs:
   build:
@@ -42,7 +43,26 @@ jobs:
         run: 
           mlflow run . --env-manager=local
 
+      - name: Get latest MLflow run_id
+        run: |
+         Run_ID=$(ls -td mlruns/0/*/ | head -n 1 | cut -d'/' -f3)
+          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+          echo "Latest run_id: $RUN_ID"
+      - name: Build Docker model
+        run: |
+          mlflow models build-docker --model-uri "runs:/$RUN_ID/model" --name "cc"
 
+      - name: Log in docker
+        uses: docker/login-activation@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      - name: Tag Docker Image
+        run: |
+            docker tag acc ${{ secrets.DOCKER_HUB_USERNAME }}/cc:latest
+      - name: Push Docker Image
+        run: |
+             docker push ${{ secrets.DOCKER_HUB_USERNAME }}/cc:latest
 
       - name: Setup Git LPS
         run: |
